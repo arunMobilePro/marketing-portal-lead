@@ -16,13 +16,12 @@ export class AuthController {
   @Get('/oauth')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() req) {}
-//   http://localhost:3000/api/v1/auth/oauth
-// http://localhost:3000/api/v1/auth/oauth/redirect
+  //   http://localhost:3000/api/v1/auth/oauth
+  // http://localhost:3000/api/v1/auth/oauth/redirect
   @Get('/oauth/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res: Response) {
-   
-
-    return this.authService.googleLogin(req)
+  async googleAuthRedirect(@Req() req: Request) {
+    const data = await this.authService.googleLogin(req);
+    return data;
   }
 }

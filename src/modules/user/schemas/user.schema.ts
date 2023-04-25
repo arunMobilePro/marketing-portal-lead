@@ -26,7 +26,7 @@ export class User {
   @Prop({ required: true })
   lastName: mongooseSchema.Types.String;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique:true })
   email: mongooseSchema.Types.String;
 
   @Prop({ default: null })

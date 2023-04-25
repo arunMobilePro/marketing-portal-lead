@@ -26,8 +26,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       lastName: name.familyName,
       picture: photos[0].value,
       accessToken,
-      refreshToken,
-      profile
     }
     done(null, user);
   }

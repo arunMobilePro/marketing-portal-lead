@@ -1,79 +1,60 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Req,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from '../user/schemas/user.repository';
 import { RegisterUserDto } from '../user/Dto/RegisterUser.dto';
 import { ConfigService } from '@nestjs/config';
+import { UserDocument } from '../user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly userRepository: UserRepository,
-        private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
-      ) {
-      }
-    
-  async googleLogin(req) {
-    if (!req.user) {
-      return 'No user from google'
-    }
-    const token = await this.signIn(req.user);
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
-    // res.cookie('access_token', token, {
-    //   maxAge: 2592000000,
-    //   sameSite: true,
-    //   secure: false,
-    // });
-
-    return { token };
-
-    return {
-      message: 'User information from google',
-      user: req.user
-    }
-  }
-
-  generateJwt(payload) {
-    
-    // const token = this.jwtService.sign(payload);
-    const token: string = this.jwtService.sign(
-        { data: payload },
-        {
-          secret: this.configService.get('JWT_SECRET_KEY'),
-          expiresIn: this.configService.get('JWT_EXPIRATION_TIME'),
-        },
-      );
-    console.log("return", token);
-    return token
-  }
-
-  async signIn(user) {
-    if (!user) {
+  async googleLogin(
+    @Req() req: Request,
+  ): Promise<
+    { data: any; msg: string; error: null } | InternalServerErrorException
+  > {
+    let status: boolean = false;
+    if (!req['user']) {
       throw new BadRequestException('Unauthenticated');
     }
-    console.log("user", user)
-    const userExists = await this.userRepository.findOne({email:user.email});
-    console.log("userExists", userExists);
+    const reqUser: RegisterUserDto = req['user'];
+    let userExists: UserDocument = await this.userRepository.findOne({
+      email: reqUser.email,
+    });
     if (!userExists) {
-      return this.registerUser(user);
+      try {
+        userExists = await this.userRepository.create(reqUser);
+        status = true;
+      } catch {
+        throw new InternalServerErrorException();
+      }
     }
-
-    return this.generateJwt({
+    const token: string = await this.generateJwt({
       sub: userExists.id,
       email: userExists.email,
+      role: userExists.role,
     });
+    return { data: { token, newUser: status }, msg: 'OK', error: null };
   }
 
-  async registerUser(user: RegisterUserDto) {
-    try {
-      const newUser = await this.userRepository.create(user);
-      console.log("newUser", newUser)
-      return this.generateJwt({
-        sub: newUser._id,
-        email: newUser.email,
-      });
-    } catch {
-      throw new InternalServerErrorException();
-    }
+  async generateJwt(payload: any): Promise<string> {
+    const token: string = this.jwtService.sign(
+      { ...payload },
+      {
+        secret: this.configService.get('JWT_SECRET_KEY'),
+        expiresIn: this.configService.get('JWT_EXPIRATION_TIME'),
+      },
+    );
+    return token;
   }
 }
