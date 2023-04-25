@@ -1,51 +1,38 @@
 import { UserService } from './user.service';
 import { User, UserDocument } from './schemas/user.schema';
 import { UserRepository } from './schemas/user.repository';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import {
   Controller,
-  Patch,
-  Get,
   Post,
-  Body,
-  Param,
-  HttpException,
   UseGuards,
-  Req,
-  HttpStatus,
-  Inject,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { InjectSentry, SentryService } from '@ntegral/nestjs-sentry';
-import { Query } from '@nestjs/common/decorators';
-import { Request } from 'express';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @Controller('user')
-@ApiTags('WALLET')
+@ApiTags('User')
+@ApiSecurity('bearer')
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(
     public readonly userService: UserService,
     public readonly userRepository: UserRepository,
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    @InjectSentry() private readonly sentryClient: SentryService,
   ) {}
 
-  /**
-   *
-   * @description Turn on automation of user strategies
-   * @return Boolean
-   */
+  
   @ApiOperation({
-    summary: 'Automation ',
-    description: 'This API helps to run all user automation.',
+    summary: 'Add User ',
+    description: 'This Api help for add User.',
   })
-  @Get('/test/is-automation')
-  async testIsAutomation(): Promise<{ data: boolean; status: number }> {
+  @ApiCreatedResponse({ description: 'The user that got created' })
+  @Post('/add-user')
+  @UsePipes(ValidationPipe)
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN',)
+  async addUser(): Promise<{ data: boolean; status: number }> {
     return { data: true, status: 200 };
   }
 }

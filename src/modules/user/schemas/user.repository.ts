@@ -1,6 +1,6 @@
 import { User, UserDocument } from './user.schema';
 import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 require('dotenv').config();
 

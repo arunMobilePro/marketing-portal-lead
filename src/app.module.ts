@@ -10,6 +10,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { devLogger, productionLogger } from './setup-logger';
 import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { LeadModule } from './modules/lead/lead.module';
 
 @Module({
   imports: [
@@ -37,7 +39,9 @@ import { AuthModule } from './modules/auth/auth.module';
       }),
     }),
     TerminusModule,
-    AuthModule
+    AuthModule,
+    UserModule,
+    LeadModule
   ],
   controllers: [AppController],
   providers: [AppService],

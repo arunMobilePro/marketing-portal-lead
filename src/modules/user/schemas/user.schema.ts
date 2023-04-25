@@ -4,6 +4,7 @@ export type UserDocument = User & Document;
 const RoleENUM = {
     CRM: 'CRM',
     MANAGER: 'MANAGER',
+    LEAD_GENERATOR: 'LEAD_GENERATOR',
     ADMIN: 'ADMIN',
   };
 
@@ -32,8 +33,11 @@ export class User {
   @Prop({ default: null })
   mobile: mongooseSchema.Types.Number;
 
-  @Prop({default: RoleENUM.CRM, enum: RoleENUM })
+  @Prop({default: RoleENUM.MANAGER, enum: RoleENUM })
   role: mongooseSchema.Types.String;
+
+  @Prop({default: true})
+  active: mongooseSchema.Types.Boolean
 }
 
 const userSchema = SchemaFactory.createForClass(User);

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from '../user/schemas/user.repository';
-import { RegisterUserDto } from '../user/Dto/RegisterUser.dto';
+import { RegisterUserDto } from '../user/Dto/registerUser.dto';
 import { ConfigService } from '@nestjs/config';
 import { UserDocument } from '../user/schemas/user.schema';
 
@@ -56,5 +56,16 @@ export class AuthService {
       },
     );
     return token;
+  }
+
+  async validateUserCreds(email: string, password: string): Promise<any> {
+    const user = await this.userRepository.findOne({email});
+
+    if (!user) throw new BadRequestException();
+
+    // if (!(await bcrypt.compare(password, user.password)))
+    //   throw new UnauthorizedException();
+
+    return user;
   }
 }
